@@ -27,13 +27,14 @@ function getArticles() {
 
 function displayArticle(article) {
     // display different articles. Taking id, imageUrl, name and description
-    document.getElementById('items').innerHTML += `
-    <a href="./product.html?id=${article._id}">
-    <article>
-    <img
-            src="${article.imageUrl}"
-            alt="Lorem ipsum dolor sit amet, Kanap name1" /><h3 class="productName">${article.name}</h3><p class="productDescription">
-                ${article.description}
-            </p></></>
-</article></a>`;
+    const templateElement = document.getElementById('templateArticle'); // product inside html template
+    const cloneElement = document.importNode(templateElement.content, true); // clone the product
+    // taking everything needed from product.js to display on screen
+    cloneElement.getElementById('imgProduct').src = article.imageUrl; // image
+    cloneElement.getElementById('productName').textContent = article.name; // name
+    cloneElement.getElementById('idProduct').href += '?id' + article._id; // id
+    cloneElement.getElementById('productDescription').textContent =
+        article.description; // description
+
+    document.getElementById('items').appendChild(cloneElement);
 }

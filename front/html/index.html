@@ -76,7 +76,26 @@
                     <h2>Une gamme d'articles exclusifs</h2>
                 </div>
                 <section class="items" id="items">
-                    <!--JS index.js get all products from here-->
+                    <template id="templateArticle">
+                        <a id="idProduct" href="./product.html?id=42">
+                            <article>
+                                <img
+                                    src
+                                    id="imgProduct"
+                                    =".../product01.jpg"
+                                    alt
+                                    id="altImgProduct"
+                                    ="Lorem ipsum dolor sit amet, Kanap name1"
+                                />
+                                <h3 id="productName">Kanap name1</h3>
+                                <p id="productDescription">
+                                    Dis enim malesuada risus sapien gravida
+                                    nulla nisl arcu. Dis enim malesuada risus
+                                    sapien gravida nulla nisl arcu.
+                                </p>
+                            </article>
+                        </a>
+                    </template>
                 </section>
             </div>
         </main>
@@ -112,5 +131,6 @@
             </div>
         </footer>
         <script src="/front/scripts/index.js"></script>
+        <script src="/front/scripts/products.js"></script>
     </body>
 </html>
