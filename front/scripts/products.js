@@ -1,5 +1,6 @@
-/* (async function () {
+(async function () {
     const articleId = getArticleId();
+    console.log(articleId);
     const article = await getArticle(articleId);
     console.log(article);
     hydrateArticle(article);
@@ -25,5 +26,9 @@ function getArticle(articleId) {
 }
 
 function hydrateArticle(article) {
-    document.getElementById('src').textContent = article.imageUrl;
-} */
+    document.getElementById('imgProductPage').src = article.imageUrl;
+    document.getElementById('title').textContent = article.name;
+    document.getElementById('description').textContent = article.description;
+    document.getElementById('price').textContent = article.price;
+    document.querySelector('colors').textContent = article.colors;
+}
