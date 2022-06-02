@@ -96,7 +96,6 @@ function addToCart(article) {
                     window.confirm(`Votre commande de ${choixQuantite} ${article.name} ${colorChoice} est ajoutée au panier
 Pour consulter votre panier, cliquez sur OK`)
                 ) {
-                    window.location.href = 'cart.html';
                 }
             };
             // Local storage importation
