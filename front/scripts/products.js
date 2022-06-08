@@ -86,7 +86,7 @@ function addToCart(article) {
         altImgProduit: article.altTxt,
       };
       // Local storage initialisation
-      // let produitLocalStorage = JSON.parse(localStorage.getItem('produit'));
+      let produitLocalStorage = JSON.parse(localStorage.getItem('produit'));
 
       // Pop up to confirm choice and redirect to cart.html
       const popupConfirmation = () => {
