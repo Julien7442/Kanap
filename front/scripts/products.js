@@ -76,7 +76,6 @@ function addToCart(article) {
       let choixQuantite = quantityPicked.value;
 
       let optionsProduit = {
-        idProduit: idProduct,
         productColor: colorChoice,
         quantiteProduit: Number(choixQuantite),
         nomProduit: article.name,

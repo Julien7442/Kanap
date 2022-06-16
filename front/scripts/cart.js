@@ -46,10 +46,10 @@ function getCart() {
       productTitle.innerHTML = produitLocalStorage[produit].nomProduit;
 
       // Insertion de la couleur
-      let productColor = document.createElement('p');
-      productTitle.appendChild(productColor);
-      productColor.innerHTML = produitLocalStorage[produit].couleurProduit;
-      productColor.style.fontSize = '20px';
+      let ProduitCouleur = document.createElement('p');
+      productTitle.appendChild(ProduitCouleur);
+      ProduitCouleur.innerHTML = produitLocalStorage[produit].productColor;
+      ProduitCouleur.style.fontSize = '20px';
 
       // Insertion du prix
       let productPrice = document.createElement('p');
@@ -236,3 +236,58 @@ function validateCity(ville) {
     return true;
   }
 }
+
+function postForm() {
+  const btn_commander = document.getElementById('order');
+
+  //Ecouter le panier
+  btn_commander.addEventListener('click', (event) => {
+    //Récupération des coordonnées du formulaire client
+    let inputName = document.getElementById('firstName');
+    let inputLastName = document.getElementById('lastName');
+    let inputAdress = document.getElementById('address');
+    let inputCity = document.getElementById('city');
+    let inputMail = document.getElementById('email');
+
+    //Construction d'un array depuis le local storage
+    let idProducts = [];
+    for (let i = 0; i < produitLocalStorage.length; i++) {
+      idProducts.push(produitLocalStorage[i].idProduit);
+    }
+    console.log(idProducts);
+
+    const order = {
+      contact: {
+        firstName: inputName.value,
+        lastName: inputLastName.value,
+        address: inputAdress.value,
+        city: inputCity.value,
+        email: inputMail.value,
+      },
+      products: idProducts,
+    };
+
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(order),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    };
+
+    fetch('http://localhost:3000/api/products/order', options)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        localStorage.clear();
+        localStorage.setItem('orderId', data.orderId);
+
+        document.location.href = 'confirmation.html';
+      })
+      .catch((err) => {
+        alert('Problème avec fetch : ' + err.message);
+      });
+  });
+}
+postForm();
