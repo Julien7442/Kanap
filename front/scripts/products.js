@@ -80,6 +80,7 @@ function addToCart(article) {
         quantiteProduit: Number(choixQuantite),
         nomProduit: article.name,
         prixProduit: article.price,
+        id: article.id,
         descriptionProduit: article.description,
         imgProduit: article.imageUrl,
         altImgProduit: article.altTxt,

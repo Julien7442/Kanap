@@ -1,8 +1,6 @@
-function main() {
-  const idNode = document.getElementById('orderId');
-  idNode.innerText = localStorage.getItem('orderId');
-  console.log(localStorage.getItem('orderId'));
-  localStorage.clear();
+let url = new URL(window.location.href);
+let search_params = new URLSearchParams(url.search);
+if (search_params.has('orderId')) {
+  id = search_params.get('orderId');
 }
-
-main();
+orderId.innerHTML = id;
