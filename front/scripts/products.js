@@ -1,6 +1,6 @@
 var str = window.location.href;
 var url = new URL(str);
-var idProduct = url.searchParams.get('id');
+const idProduct = new URL(window.location.href).searchParams.get('id');
 console.log(idProduct);
 
 let article = '';
@@ -80,7 +80,7 @@ function addToCart(article) {
         quantiteProduit: Number(choixQuantite),
         nomProduit: article.name,
         prixProduit: article.price,
-        id: article.id,
+        idProduit: idProduct,
         descriptionProduit: article.description,
         imgProduit: article.imageUrl,
         altImgProduit: article.altTxt,
