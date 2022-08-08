@@ -315,7 +315,7 @@ verify();
 /**
  *  crée un tableau et y ajoute les id des produit present dans localStorage
  */
-async function ajoute() {
+function ajoute() {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     //crée un tableau avec les id des produit present dans localStorage
@@ -324,7 +324,7 @@ async function ajoute() {
     if (produitLocalStorage !== null) {
       if (produitLocalStorage.length >= 1) {
         for (let i = 0; i < produitLocalStorage.length; i++) {
-          id.push(produitLocalStorage[i]._id);
+          id.push(produitLocalStorage[i].idProduit);
         }
       } else {
         alert('le panier est vide !');
@@ -353,30 +353,26 @@ async function ajoute() {
       },
     };
     // envoie de l'objet contact et du tableau des id de chaque produit present lors de la commande
-    if (produitLocalStorage !== null) {
-      if (produitLocalStorage.length >= 1) {
-        fetch('http://localhost:3000/api/products/order', options)
-          .then((response) => response.json())
+    console.log(verify);
+    if (verify()) {
+      if (produitLocalStorage !== null) {
+        console.log(produitLocalStorage);
+        if (produitLocalStorage.length >= 1) {
+          fetch('http://localhost:3000/api/products/order', options)
+            .then((response) => response.json())
 
-          .then((res) => {
-            console.log(res.orderId);
+            .then((res) => {
+              console.log(res.orderId);
+              localStorage.clear('obj');
+              // redirige l'utilisateur sur la page confirmation
+              document.location.href =
+                'confirmation.html?orderId=' + res.orderId;
+            })
 
-            if (verify()) {
-              localStorage.setItem('orderId', res.orderId);
-              document.location.href = 'confirmation.html?id=' + res.orderId;
-              console.log(verify());
-            } else {
-              firstNameErrorMsg.innerHTML = 'merci de renseigner ce champ !';
-              lastNameErrorMsg.innerHTML = 'merci de renseigner ce champ !';
-              addressErrorMsg.innerHTML = 'merci de renseigner ce champ !';
-              cityErrorMsg.innerHTML = 'merci de renseigner ce champ !';
-              emailErrorMsg.innerHTML = 'merci de renseigner ce champ !';
-            }
-          })
-
-          .catch((error) => {
-            console.log('error :' + error);
-          });
+            .catch((error) => {
+              console.log('error :' + error);
+            });
+        }
       }
     }
   });
