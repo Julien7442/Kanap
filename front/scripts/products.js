@@ -1,3 +1,4 @@
+// taking product ID from URL
 var str = window.location.href;
 var url = new URL(str);
 const idProduct = new URL(window.location.href).searchParams.get('id');
@@ -8,26 +9,34 @@ let article = '';
 const colorPicked = document.querySelector('#colors');
 const quantityPicked = document.querySelector('#quantity');
 
-getArticle();
+getArticle(idProduct);
 
 // Getting articles from API
-function getArticle() {
-  fetch('http://localhost:3000/api/products/' + idProduct)
-    .then((res) => {
-      return res.json();
-    })
+export default async function getArticle(idProduct) {
+  if (idProduct !== undefined) {
+    // requête l'api avec l'idProduct présent dans l'url
+    return await fetch('http://localhost:3000/api/products/' + idProduct)
+      // passe la réponse au format json
+      .then(function (res) {
+        if (res.ok) {
+          return res.json();
+        }
+      })
 
-    // Moving API data to DOM
-    .then(async function (resultatAPI) {
-      article = await resultatAPI;
-      console.table(article);
-      if (article) {
-        getPost(article);
-      }
-    })
-    .catch((error) => {
-      console.log('Erreur de la requête API');
-    });
+      .then(async function (resultatAPI) {
+        // attend la réponse du serveur et la stocke dans une variable
+        article = await resultatAPI;
+
+        if (article) {
+          console.log(article);
+          getPost(article);
+        }
+        return article;
+      })
+      .catch((error) => {
+        console.log('Erreur de la requête API');
+      });
+  }
 }
 
 function getPost(article) {
@@ -59,7 +68,7 @@ function getPost(article) {
   }
   addToCart(article);
 }
-
+// add basket function
 function addToCart(article) {
   const btn_envoyerPanier = document.querySelector('#addToCart');
   // Basket button with condition (article quantity must be between 1 and 100)
@@ -79,12 +88,12 @@ function addToCart(article) {
         productColor: colorChoice,
         quantiteProduit: Number(choixQuantite),
         nomProduit: article.name,
-        prixProduit: article.price,
         idProduit: idProduct,
         descriptionProduit: article.description,
         imgProduit: article.imageUrl,
         altImgProduit: article.altTxt,
       };
+
       // Local storage initialisation
       let produitLocalStorage = JSON.parse(localStorage.getItem('produit'));
 

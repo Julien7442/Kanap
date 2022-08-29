@@ -1,7 +1,4 @@
-/**
- * récupère l'id de commande dans le localStorage.getItem('orderId');
- * @return id de commande
- */
+// return command id
 
 let url = new URL(window.location.href);
 let search_params = new URLSearchParams(url.search);

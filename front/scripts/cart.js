@@ -1,105 +1,81 @@
-//Initialisation du local storage
+import getArticle from './products.js';
 let produitLocalStorage = JSON.parse(localStorage.getItem('produit'));
-console.table(produitLocalStorage); // affichage tableau produits
-const positionEmptyCart = document.querySelector('#cart__items');
+/**
+ * affiche les informations des produits présent dans le panier
+ * @return ajoute les élément un par un dans le DOM
+ */
+async function addCard() {
+  console.log(produitLocalStorage);
+  // si il y a des produit présent dans local storage
+  if (produitLocalStorage !== null) {
+    // récupère les produit et ses information un par un dans une variable nommée key
+    for (let key in produitLocalStorage) {
+      // récupère l'id du produit dans local Storage
+      let id = produitLocalStorage[Number(key)].idProduit;
+      console.log(id);
+      console.log(await getArticle(id));
 
-function getCart() {
-  if (produitLocalStorage === null || produitLocalStorage == 0) {
-    const emptyCart = `<p>Votre panier est vide</p>`;
-    positionEmptyCart.innerHTML = emptyCart;
-  } else {
-    for (let produit in produitLocalStorage) {
-      // Insertion de l'élément "article"
-      let productArticle = document.createElement('article');
-      document.querySelector('#cart__items').appendChild(productArticle);
-      productArticle.className = 'cart__item';
-      productArticle.setAttribute(
-        'data-id',
-        produitLocalStorage[produit].idProduit
-      );
+      // récupère les information du produit en passent l'id du produit en paramètre
+      await getArticle(id).then(function (article) {
+        // créer un balise article
+        console.log(article);
+        let Article = document.createElement('article');
+        // récupère la couleur du produit renseignée dans le local storage
+        let colors = produitLocalStorage[key].colors;
+        // récupère la quantité du produit renseignée dans le local storage
+        let quantity = String(produitLocalStorage[key].quantity);
+        // récupère l'image du produit retourner par l'api
+        let Img = article.imgProduit;
+        // récupère le texte descriptif de l'image du produit retourner par l'api
+        let Altimg = article.altImgProduit;
+        // récupère le nom du produit retourner par l'api
+        let Name = article.name;
+        // récupère le prix du produit retourner par l'api
+        let Price = article.price;
+        // ajoute l'élément Article comme enfants de l'élément section
+        section.appendChild(Article);
+        // ajout de la classe "cart__item"
+        Article.classList.add('cart__item');
+        // ajout de l'attribut "data-id"
+        Article.setAttribute('data-id', `${id}`);
+        // ajout de l'attribut data-color
+        Article.setAttribute('data-color', `${colors}`);
+        // ajout des éléments sous format html
+        Article.innerHTML = `<div class="cart__item__img">
+                          <img src="${Img}" alt="${Altimg}">
+                      </div>
+                      <div class="cart__item__content__description">
+                                  <h2>${Name}</h2>
+                                  <p>${colors}</p>
+                                  <p>${Price} €</p>
+                              </div>
+                          <div class="cart__item__content__settings">
+                              <div class="cart__item__content__settings__quantity">
+                                  <p>Qté : </p>
+                                  <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantity}">
+                              </div>
+                              <div class="cart__item__content__settings__delete">
+                                  <p id="deleteItem" class="deleteItem">Supprimer</p>
+                              </div>
+                          </div>
+                  </div> `;
 
-      // Insertion de l'élément "div"
-      let productDivImg = document.createElement('div');
-      productArticle.appendChild(productDivImg);
-      productDivImg.className = 'cart__item__img';
-
-      // Insertion de l'image
-      let productImg = document.createElement('img');
-      productDivImg.appendChild(productImg);
-      productImg.src = produitLocalStorage[produit].imgProduit;
-      productImg.alt = produitLocalStorage[produit].altImgProduit;
-
-      // Insertion de l'élément "div"
-      let productItemContent = document.createElement('div');
-      productArticle.appendChild(productItemContent);
-      productItemContent.className = 'cart__item__content';
-
-      // Insertion de l'élément "div"
-      let productItemContentTitlePrice = document.createElement('div');
-      productItemContent.appendChild(productItemContentTitlePrice);
-      productItemContentTitlePrice.className =
-        'cart__item__content__titlePrice';
-
-      // Insertion du titre h3
-      let productTitle = document.createElement('h2');
-      productItemContentTitlePrice.appendChild(productTitle);
-      productTitle.innerHTML = produitLocalStorage[produit].nomProduit;
-
-      // Insertion de la couleur
-      let ProduitCouleur = document.createElement('p');
-      productTitle.appendChild(ProduitCouleur);
-      ProduitCouleur.innerHTML = produitLocalStorage[produit].productColor;
-      ProduitCouleur.style.fontSize = '20px';
-
-      // Insertion du prix
-      let productPrice = document.createElement('p');
-      productItemContentTitlePrice.appendChild(productPrice);
-      productPrice.innerHTML = produitLocalStorage[produit].prixProduit + ' €';
-
-      // Insertion de l'élément "div"
-      let productItemContentSettings = document.createElement('div');
-      productItemContent.appendChild(productItemContentSettings);
-      productItemContentSettings.className = 'cart__item__content__settings';
-
-      // Insertion de l'élément "div"
-      let productItemContentSettingsQuantity = document.createElement('div');
-      productItemContentSettings.appendChild(
-        productItemContentSettingsQuantity
-      );
-      productItemContentSettingsQuantity.className =
-        'cart__item__content__settings__quantity';
-
-      // Insertion de "Qté : "
-      let productQte = document.createElement('p');
-      productItemContentSettingsQuantity.appendChild(productQte);
-      productQte.innerHTML = 'Qté : ';
-
-      // Insertion de la quantité
-      let productQuantity = document.createElement('input');
-      productItemContentSettingsQuantity.appendChild(productQuantity);
-      productQuantity.value = produitLocalStorage[produit].quantiteProduit;
-      productQuantity.className = 'itemQuantity';
-      productQuantity.setAttribute('type', 'number');
-      productQuantity.setAttribute('min', '1');
-      productQuantity.setAttribute('max', '100');
-      productQuantity.setAttribute('name', 'itemQuantity');
-
-      // Insertion de l'élément "div"
-      let productItemContentSettingsDelete = document.createElement('div');
-      productItemContentSettings.appendChild(productItemContentSettingsDelete);
-      productItemContentSettingsDelete.className =
-        'cart__item__content__settings__delete';
-
-      // Insertion de "p" supprimer
-      let productSupprimer = document.createElement('p');
-      productItemContentSettingsDelete.appendChild(productSupprimer);
-      productSupprimer.className = 'deleteItem';
-      productSupprimer.innerHTML = 'Supprimer';
+        total(Price, quantity);
+      });
+      // appelle des function suivante après l'insertion des produits
+      deleteProduct();
+      modifieQtt();
+      ValidationOfOrder();
     }
+  } else {
+    let titre_Alert = document.getElementById('cart__items');
+    titre_Alert.innerHTML = '<h1>Le panier est vide ! </h1>';
+    return;
   }
 }
-getCart();
+addCard();
 
+/*
 function getTotals() {
   // Total quantity
   var elemsQtt = document.getElementsByClassName('itemQuantity');
@@ -155,7 +131,7 @@ function modifyQtt() {
   }
 }
 modifyQtt();
-
+*/
 // Delete product
 function deleteProduct() {
   let btn_supprimer = document.querySelectorAll('.deleteItem');
@@ -182,7 +158,7 @@ function deleteProduct() {
 }
 deleteProduct();
 
-// VALIDATION DE COMMANDE \\
+// Confirm order \\
 
 // Variable
 let firstName = document.getElementById('firstName');
@@ -207,10 +183,7 @@ let emailRegex = new RegExp(
   '^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$'
 );
 
-/**
- * écoute les évènements sur les inputs et les compares au regex
- * @returns boolean
- */
+// testing event compare with regex
 function verify() {
   // FIRST NAME
   function validfirstName() {
@@ -297,7 +270,7 @@ function verify() {
     validemail();
   });
 
-  // si tous les champ son valide apres verification des regex renvoie true sinon renvoie false
+  // if everything is ok with regex then return true otherwise return false
   if (
     validfirstName() &
     validlastName() &
@@ -313,12 +286,12 @@ function verify() {
 verify();
 
 /**
- *  crée un tableau et y ajoute les id des produit present dans localStorage
+ *  create table and add current id in localstorage
  */
 function ajoute() {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-    //crée un tableau avec les id des produit present dans localStorage
+    // create table
     let id = [];
     console.log(produitLocalStorage);
     if (produitLocalStorage !== null) {
@@ -332,7 +305,7 @@ function ajoute() {
     }
 
     console.log(id);
-    // crée un tableau contact et y ajoute le tableau des produit
+    // create contact table and add id table
     const tab = {
       contact: {
         firstName: firstName.value,
@@ -352,7 +325,8 @@ function ajoute() {
         'content-type': 'application/json',
       },
     };
-    // envoie de l'objet contact et du tableau des id de chaque produit present lors de la commande
+
+    // send contact objet and table of id from every products when ordering
     console.log(verify);
     if (verify()) {
       if (produitLocalStorage !== null) {
@@ -364,7 +338,7 @@ function ajoute() {
             .then((res) => {
               console.log(res.orderId);
               localStorage.clear('obj');
-              // redirige l'utilisateur sur la page confirmation
+              // user is sent on confirmation page
               document.location.href =
                 'confirmation.html?orderId=' + res.orderId;
             })
