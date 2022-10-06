@@ -8,64 +8,112 @@ async function addCard() {
   console.log(produitLocalStorage);
   // si il y a des produit présent dans local storage
   if (produitLocalStorage !== null) {
+    let section = document.querySelector('#cart__items');
     // récupère les produit et ses information un par un dans une variable nommée key
-    for (let key in produitLocalStorage) {
+    for (let produit of produitLocalStorage) {
       // récupère l'id du produit dans local Storage
-      let id = produitLocalStorage[Number(key)].idProduit;
-      console.log(id);
-      console.log(await getArticle(id));
+      let id = produit.idProduit;
 
       // récupère les information du produit en passent l'id du produit en paramètre
-      await getArticle(id).then(function (article) {
+      await getArticle(id).then(function (produitApi) {
         // créer un balise article
-        console.log(article);
         let Article = document.createElement('article');
-        // récupère la couleur du produit renseignée dans le local storage
-        let colors = produitLocalStorage[key].colors;
-        // récupère la quantité du produit renseignée dans le local storage
-        let quantity = String(produitLocalStorage[key].quantity);
-        // récupère l'image du produit retourner par l'api
-        let Img = article.imgProduit;
-        // récupère le texte descriptif de l'image du produit retourner par l'api
-        let Altimg = article.altImgProduit;
-        // récupère le nom du produit retourner par l'api
-        let Name = article.name;
         // récupère le prix du produit retourner par l'api
-        let Price = article.price;
+        let Price = produitApi.price;
         // ajoute l'élément Article comme enfants de l'élément section
         section.appendChild(Article);
         // ajout de la classe "cart__item"
         Article.classList.add('cart__item');
         // ajout de l'attribut "data-id"
-        Article.setAttribute('data-id', `${id}`);
+        Article.setAttribute('data-id', `${produit.idProduit}`);
         // ajout de l'attribut data-color
-        Article.setAttribute('data-color', `${colors}`);
+        Article.setAttribute('data-color', `${produit.productColor}`);
         // ajout des éléments sous format html
-        Article.innerHTML = `<div class="cart__item__img">
-                          <img src="${Img}" alt="${Altimg}">
-                      </div>
-                      <div class="cart__item__content__description">
-                                  <h2>${Name}</h2>
-                                  <p>${colors}</p>
-                                  <p>${Price} €</p>
-                              </div>
-                          <div class="cart__item__content__settings">
-                              <div class="cart__item__content__settings__quantity">
-                                  <p>Qté : </p>
-                                  <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantity}">
-                              </div>
-                              <div class="cart__item__content__settings__delete">
-                                  <p id="deleteItem" class="deleteItem">Supprimer</p>
-                              </div>
-                          </div>
-                  </div> `;
+        Article.innerHTML = `
+          <div class="cart__item__img">
+            <img src="${produit.imgProduit}" alt="${produit.altImgProduit}">
+          </div>
+          <div class="cart__item__content">
+            <div class="cart__item__content__description">
+              <h2>${produit.nomProduit}</h2>
+              <p>${produit.productColor}</p>
+              <p>${Price} €</p>
+            </div>
+            <div class="cart__item__content__settings">
+              <div class="cart__item__content__settings__quantity">
+                <p>Qté : </p>
+                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${produit.quantiteProduit}">
+              </div>
+              <div class="cart__item__content__settings__delete">
+                <p id="deleteItem" class="deleteItem">Supprimer</p>
+              </div>
+            </div>
+          </div>
+        `;
 
-        total(Price, quantity);
+        // TODO: Implementer le calcul du prix total et la quantité total ici
+        let tabPrice = [];
+        let tabQuantite = [];
+        /**
+         * calcul le prix et la quantité total 
+         * @param price - est le prix du produit 
+         * @param quantite - est la quantité du produit 
+          @return quantite  price 
+         */
+        function total(price, quantite) {
+          console.log('price', price);
+          console.log('quantité', quantite);
+          // récupère la balise l'id totalQuantity
+          let quantityTotal = document.getElementById('totalQuantity');
+          // récupère la balise totalPrice
+          let prixTotal = document.getElementById('totalPrice');
+          // nombre de la quantité total
+          let totalQ = 0;
+          // nombre du prix total
+          let totalP = 0;
+          // récupère la quantité selection lors de l'ajout dans le local storage
+          let QNumber = Number(quantite);
+          // ajoute le prix du produit dans le tableau du prix
+          tabPrice.push({ price });
+          // ajoute la quantité du produit dans le tableau de le quantité
+          tabQuantite.push({ QNumber });
+
+          console.log(tabPrice);
+          console.log(tabQuantite);
+          // récupère les produits présent dans le tableau de prix un par un dans une variable
+          for (let key in tabPrice) {
+            console.log(tabPrice[key].price);
+            // calcul le prix total et les enregistre dans leur variable
+            totalP += tabQuantite[key].QNumber * tabPrice[key].price;
+            // calcul la quantité total et les enregistre dans leur variable
+            totalQ += tabQuantite[key].QNumber;
+          }
+          console.log(totalP);
+          console.log(totalQ);
+
+          // ajoute la quantité total au DOM
+          quantityTotal.innerHTML = totalQ;
+          // ajoute le prix total au DOM
+          prixTotal.innerHTML = totalP;
+        }
+        // ajout des event listeners après l'insertion des produits
+        // Event listener pour le bouton de suppression
+        Article.querySelector('.deleteItem').addEventListener(
+          'click',
+          (event) => {
+            event.preventDefault();
+            deleteProduct(produit.idProduit, produit.productColor);
+          }
+        );
+
+        // Event listener pour le champ de modification de la quantité
+        Article.querySelector('.itemQuantity').addEventListener(
+          'change',
+          (event) => {
+            // TODO:
+          }
+        );
       });
-      // appelle des function suivante après l'insertion des produits
-      deleteProduct();
-      modifieQtt();
-      ValidationOfOrder();
     }
   } else {
     let titre_Alert = document.getElementById('cart__items');
@@ -75,88 +123,22 @@ async function addCard() {
 }
 addCard();
 
-/*
-function getTotals() {
-  // Total quantity
-  var elemsQtt = document.getElementsByClassName('itemQuantity');
-  var myLength = elemsQtt.length,
-    totalQtt = 0;
-
-  for (var i = 0; i < myLength; ++i) {
-    totalQtt += elemsQtt[i].valueAsNumber;
-  }
-
-  let productTotalQuantity = document.getElementById('totalQuantity');
-  productTotalQuantity.innerHTML = totalQtt;
-  console.log(totalQtt);
-
-  // Total price
-  totalPrice = 0;
-
-  for (var i = 0; i < myLength; ++i) {
-    totalPrice +=
-      elemsQtt[i].valueAsNumber * produitLocalStorage[i].prixProduit;
-  }
-
-  let productTotalPrice = document.getElementById('totalPrice');
-  productTotalPrice.innerHTML = totalPrice;
-  console.log(totalPrice);
-}
-getTotals();
-
-// Modify product quantity
-function modifyQtt() {
-  let qttModif = document.querySelectorAll('.itemQuantity');
-
-  for (let k = 0; k < qttModif.length; k++) {
-    qttModif[k].addEventListener('change', (event) => {
-      event.preventDefault();
-
-      // Select product to modify quantity
-      let quantityModif = produitLocalStorage[k].quantiteProduit;
-      let qttModifValue = qttModif[k].valueAsNumber;
-
-      const resultFind = produitLocalStorage.find(
-        (el) => el.qttModifValue !== quantityModif
-      );
-
-      resultFind.quantiteProduit = qttModifValue;
-      produitLocalStorage[k].quantiteProduit = resultFind.quantiteProduit;
-
-      localStorage.setItem('produit', JSON.stringify(produitLocalStorage));
-
-      // refresh
-      location.reload();
-    });
-  }
-}
-modifyQtt();
-*/
 // Delete product
-function deleteProduct() {
-  let btn_supprimer = document.querySelectorAll('.deleteItem');
+function deleteProduct(idDelete, colorDelete) {
+  console.log(colorDelete);
+  console.log(idDelete);
+  // Select product id and color to delete
+  produitLocalStorage = produitLocalStorage.filter(
+    (el) => el.idProduit !== idDelete || el.productColor !== colorDelete
+  );
 
-  for (let j = 0; j < btn_supprimer.length; j++) {
-    btn_supprimer[j].addEventListener('click', (event) => {
-      event.preventDefault();
+  localStorage.setItem('produit', JSON.stringify(produitLocalStorage));
 
-      // Select product id and color to delete
-      let idDelete = produitLocalStorage[j].idProduit;
-      let colorDelete = produitLocalStorage[j].couleurProduit;
-
-      produitLocalStorage = produitLocalStorage.filter(
-        (el) => el.idProduit !== idDelete || el.couleurProduit !== colorDelete
-      );
-
-      localStorage.setItem('produit', JSON.stringify(produitLocalStorage));
-
-      // Alert product has been deleted
-      alert('Ce produit a bien été supprimé du panier');
-      location.reload();
-    });
-  }
+  // Alert product has been deleted
+  alert('Ce produit a bien été supprimé du panier');
+  location.reload();
 }
-deleteProduct();
+// deleteProduct();
 
 // Confirm order \\
 
