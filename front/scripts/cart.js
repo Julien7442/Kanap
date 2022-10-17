@@ -1,5 +1,6 @@
-import getArticle from './products.js';
-let produitLocalStorage = JSON.parse(localStorage.getItem('produit'));
+import getArticle from "./products.js";
+let produitLocalStorage = JSON.parse(localStorage.getItem("produit"));
+
 /**
  * affiche les informations des produits présent dans le panier
  * @return ajoute les élément un par un dans le DOM
@@ -8,7 +9,23 @@ async function addCard() {
   console.log(produitLocalStorage);
   // si il y a des produit présent dans local storage
   if (produitLocalStorage !== null) {
-    let section = document.querySelector('#cart__items');
+    // Tri afin d'afficher de façon regroupé les meme canapé ayant des différentes couleurs.
+    produitLocalStorage = produitLocalStorage.sort((produit1, produit2) => {
+      if (produit1.idProduit > produit2.idProduit) {
+        return 1;
+      } else if (produit1.idProduit < produit2.idProduit) {
+        return -1;
+      }
+      return 0;
+    });
+    let section = document.querySelector("#cart__items");
+    // récupère la balise l'id totalQuantity
+    let quantityTotalHTML = document.getElementById("totalQuantity");
+    let quantityTotal = 0;
+    // récupère la balise totalPrice
+    let prixTotalHTML = document.getElementById("totalPrice");
+    let prixTotal = 0;
+
     // récupère les produit et ses information un par un dans une variable nommée key
     for (let produit of produitLocalStorage) {
       // récupère l'id du produit dans local Storage
@@ -17,17 +34,17 @@ async function addCard() {
       // récupère les information du produit en passent l'id du produit en paramètre
       await getArticle(id).then(function (produitApi) {
         // créer un balise article
-        let Article = document.createElement('article');
+        let Article = document.createElement("article");
         // récupère le prix du produit retourner par l'api
         let Price = produitApi.price;
         // ajoute l'élément Article comme enfants de l'élément section
         section.appendChild(Article);
         // ajout de la classe "cart__item"
-        Article.classList.add('cart__item');
+        Article.classList.add("cart__item");
         // ajout de l'attribut "data-id"
-        Article.setAttribute('data-id', `${produit.idProduit}`);
+        Article.setAttribute("data-id", `${produit.idProduit}`);
         // ajout de l'attribut data-color
-        Article.setAttribute('data-color', `${produit.productColor}`);
+        Article.setAttribute("data-color", `${produit.productColor}`);
         // ajout des éléments sous format html
         Article.innerHTML = `
           <div class="cart__item__img">
@@ -51,55 +68,17 @@ async function addCard() {
           </div>
         `;
 
-        // TODO: Implementer le calcul du prix total et la quantité total ici
-        let tabPrice = [];
-        let tabQuantite = [];
-        /**
-         * calcul le prix et la quantité total 
-         * @param price - est le prix du produit 
-         * @param quantite - est la quantité du produit 
-          @return quantite  price 
-         */
-        function total(price, quantite) {
-          console.log('price', price);
-          console.log('quantité', quantite);
-          // récupère la balise l'id totalQuantity
-          let quantityTotal = document.getElementById('totalQuantity');
-          // récupère la balise totalPrice
-          let prixTotal = document.getElementById('totalPrice');
-          // nombre de la quantité total
-          let totalQ = 0;
-          // nombre du prix total
-          let totalP = 0;
-          // récupère la quantité selection lors de l'ajout dans le local storage
-          let QNumber = Number(quantite);
-          // ajoute le prix du produit dans le tableau du prix
-          tabPrice.push({ price });
-          // ajoute la quantité du produit dans le tableau de le quantité
-          tabQuantite.push({ QNumber });
+        // Calcul du prix total et la quantité total
+        const prixTotalUnCanape = produit.quantiteProduit * Price;
+        quantityTotal += produit.quantiteProduit;
+        quantityTotalHTML.innerText = quantityTotal;
+        prixTotal += prixTotalUnCanape;
+        prixTotalHTML.innerText = prixTotal;
 
-          console.log(tabPrice);
-          console.log(tabQuantite);
-          // récupère les produits présent dans le tableau de prix un par un dans une variable
-          for (let key in tabPrice) {
-            console.log(tabPrice[key].price);
-            // calcul le prix total et les enregistre dans leur variable
-            totalP += tabQuantite[key].QNumber * tabPrice[key].price;
-            // calcul la quantité total et les enregistre dans leur variable
-            totalQ += tabQuantite[key].QNumber;
-          }
-          console.log(totalP);
-          console.log(totalQ);
-
-          // ajoute la quantité total au DOM
-          quantityTotal.innerHTML = totalQ;
-          // ajoute le prix total au DOM
-          prixTotal.innerHTML = totalP;
-        }
         // ajout des event listeners après l'insertion des produits
         // Event listener pour le bouton de suppression
-        Article.querySelector('.deleteItem').addEventListener(
-          'click',
+        Article.querySelector(".deleteItem").addEventListener(
+          "click",
           (event) => {
             event.preventDefault();
             deleteProduct(produit.idProduit, produit.productColor);
@@ -107,17 +86,21 @@ async function addCard() {
         );
 
         // Event listener pour le champ de modification de la quantité
-        Article.querySelector('.itemQuantity').addEventListener(
-          'change',
+        Article.querySelector(".itemQuantity").addEventListener(
+          "change",
           (event) => {
-            // TODO:
+            updateProductQuantity(
+              produit.idProduit,
+              produit.productColor,
+              event.target.value
+            );
           }
         );
       });
     }
   } else {
-    let titre_Alert = document.getElementById('cart__items');
-    titre_Alert.innerHTML = '<h1>Le panier est vide ! </h1>';
+    let titre_Alert = document.getElementById("cart__items");
+    titre_Alert.innerHTML = "<h1>Le panier est vide ! </h1>";
     return;
   }
 }
@@ -132,37 +115,49 @@ function deleteProduct(idDelete, colorDelete) {
     (el) => el.idProduit !== idDelete || el.productColor !== colorDelete
   );
 
-  localStorage.setItem('produit', JSON.stringify(produitLocalStorage));
+  localStorage.setItem("produit", JSON.stringify(produitLocalStorage));
 
   // Alert product has been deleted
-  alert('Ce produit a bien été supprimé du panier');
+  alert("Ce produit a bien été supprimé du panier");
   location.reload();
 }
-// deleteProduct();
+
+// Update product quantity
+function updateProductQuantity(productId, productColor, quantity) {
+  // First find the product in the local storage
+  const product = produitLocalStorage.find(
+    (el) => el.idProduit == productId && el.productColor == productColor
+  );
+  // Update it's quantity
+  product.quantiteProduit = parseInt(quantity);
+  localStorage.setItem("produit", JSON.stringify(produitLocalStorage));
+
+  location.reload();
+}
 
 // Confirm order \\
 
 // Variable
-let firstName = document.getElementById('firstName');
-let firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
-let lastName = document.getElementById('lastName');
-let lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
-let address = document.getElementById('address');
-let addressErrorMsg = document.getElementById('addressErrorMsg');
-let city = document.getElementById('city');
-let cityErrorMsg = document.getElementById('cityErrorMsg');
-let email = document.getElementById('email');
-let emailErrorMsg = document.getElementById('emailErrorMsg');
-let btn = document.getElementById('order');
-let input = document.querySelectorAll('input');
+let firstName = document.getElementById("firstName");
+let firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
+let lastName = document.getElementById("lastName");
+let lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
+let address = document.getElementById("address");
+let addressErrorMsg = document.getElementById("addressErrorMsg");
+let city = document.getElementById("city");
+let cityErrorMsg = document.getElementById("cityErrorMsg");
+let email = document.getElementById("email");
+let emailErrorMsg = document.getElementById("emailErrorMsg");
+let btn = document.getElementById("order");
+let input = document.querySelectorAll("input");
 
 // RegExp
 let Regex = new RegExp("^[a-zA-Z ,.'-]+$");
 let addressRegex = new RegExp(
-  '^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+'
+  "^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+"
 );
 let emailRegex = new RegExp(
-  '^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$'
+  "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$"
 );
 
 // testing event compare with regex
@@ -170,16 +165,16 @@ function verify() {
   // FIRST NAME
   function validfirstName() {
     if (firstName.value.length <= 0) {
-      firstNameErrorMsg.innerHTML = '';
+      firstNameErrorMsg.innerHTML = "";
     } else if (Regex.test(firstName.value)) {
-      firstNameErrorMsg.innerHTML = '';
+      firstNameErrorMsg.innerHTML = "";
       return true;
     } else {
-      firstNameErrorMsg.innerHTML = 'merci de vérifier ce champ !';
+      firstNameErrorMsg.innerHTML = "merci de vérifier ce champ !";
       return false;
     }
   }
-  firstName.addEventListener('change', () => {
+  firstName.addEventListener("change", () => {
     console.log(firstName.value);
     validfirstName();
   });
@@ -187,16 +182,16 @@ function verify() {
   //LAST NAME
   function validlastName() {
     if (lastName.value.length <= 0) {
-      lastNameErrorMsg.innerHTML = '';
+      lastNameErrorMsg.innerHTML = "";
     } else if (Regex.test(lastName.value)) {
-      lastNameErrorMsg.innerHTML = '';
+      lastNameErrorMsg.innerHTML = "";
       return true;
     } else {
-      lastNameErrorMsg.innerHTML = 'merci de vérifier ce champ !';
+      lastNameErrorMsg.innerHTML = "merci de vérifier ce champ !";
       return false;
     }
   }
-  lastName.addEventListener('change', () => {
+  lastName.addEventListener("change", () => {
     console.log(lastName.value);
     validlastName();
   });
@@ -204,16 +199,16 @@ function verify() {
   // ADDRESS
   function validaddress() {
     if (address.value.length <= 0) {
-      addressErrorMsg.innerHTML = '';
+      addressErrorMsg.innerHTML = "";
     } else if (addressRegex.test(address.value)) {
-      addressErrorMsg.innerHTML = '';
+      addressErrorMsg.innerHTML = "";
       return true;
     } else {
-      addressErrorMsg.innerHTML = 'merci de vérifier ce champ !';
+      addressErrorMsg.innerHTML = "merci de vérifier ce champ !";
       return false;
     }
   }
-  address.addEventListener('change', () => {
+  address.addEventListener("change", () => {
     console.log(address.value);
     validaddress();
   });
@@ -221,16 +216,16 @@ function verify() {
   // CITY
   function validcity() {
     if (city.value.length <= 0) {
-      cityErrorMsg.innerHTML = '';
+      cityErrorMsg.innerHTML = "";
     } else if (Regex.test(city.value)) {
-      cityErrorMsg.innerHTML = '';
+      cityErrorMsg.innerHTML = "";
       return true;
     } else {
-      cityErrorMsg.innerHTML = 'merci de vérifier ce champ !';
+      cityErrorMsg.innerHTML = "merci de vérifier ce champ !";
       return false;
     }
   }
-  city.addEventListener('change', () => {
+  city.addEventListener("change", () => {
     console.log(city.value);
     validcity();
   });
@@ -238,16 +233,16 @@ function verify() {
   // EMAIL
   function validemail() {
     if (email.value.length <= 0) {
-      emailErrorMsg.innerHTML = '';
+      emailErrorMsg.innerHTML = "";
     } else if (emailRegex.test(email.value)) {
-      emailErrorMsg.innerHTML = '';
+      emailErrorMsg.innerHTML = "";
       return true;
     } else {
-      emailErrorMsg.innerHTML = 'merci de vérifier ce champ !';
+      emailErrorMsg.innerHTML = "merci de vérifier ce champ !";
       return false;
     }
   }
-  email.addEventListener('change', () => {
+  email.addEventListener("change", () => {
     console.log(email.value);
     validemail();
   });
@@ -271,7 +266,7 @@ verify();
  *  create table and add current id in localstorage
  */
 function ajoute() {
-  btn.addEventListener('click', (e) => {
+  btn.addEventListener("click", (e) => {
     e.preventDefault();
     // create table
     let id = [];
@@ -282,7 +277,7 @@ function ajoute() {
           id.push(produitLocalStorage[i].idProduit);
         }
       } else {
-        alert('le panier est vide !');
+        alert("le panier est vide !");
       }
     }
 
@@ -300,11 +295,11 @@ function ajoute() {
     };
 
     const options = {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(tab),
       headers: {
-        Accept: 'application/json',
-        'content-type': 'application/json',
+        Accept: "application/json",
+        "content-type": "application/json",
       },
     };
 
@@ -314,22 +309,26 @@ function ajoute() {
       if (produitLocalStorage !== null) {
         console.log(produitLocalStorage);
         if (produitLocalStorage.length >= 1) {
-          fetch('http://localhost:3000/api/products/order', options)
+          fetch("http://localhost:3000/api/products/order", options)
             .then((response) => response.json())
 
             .then((res) => {
               console.log(res.orderId);
-              localStorage.clear('obj');
+              localStorage.clear("obj");
               // user is sent on confirmation page
               document.location.href =
-                'confirmation.html?orderId=' + res.orderId;
+                "confirmation.html?orderId=" + res.orderId;
             })
 
             .catch((error) => {
-              console.log('error :' + error);
+              console.log("error :" + error);
             });
         }
+      } else {
+        alert("Merci d'ajouter au moins un produit a votre panier !");
       }
+    } else {
+      alert("Merci de vérifier vos champs !");
     }
   });
 }
